@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "166151516811",
+    "project_id": "masomo-share",
+    "storage_bucket": "masomo-share.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:166151516811:android:0d8010e8a96369e2ab9a8e",
+        "android_client_info": {
+          "package_name": "com.example.masomoshare254"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBusu3a3nMuEKD3TfAJ1XRZLjZOx9X0Gtg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

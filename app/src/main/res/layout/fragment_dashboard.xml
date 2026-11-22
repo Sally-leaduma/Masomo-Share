@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F8FA"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- App name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Masomo Share"
+            android:textColor="#174A72"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <!-- Welcome message -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Welcome to Masomo Share!"
+            android:textColor="#202124"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Learn. Share. Access. Anywhere."
+            android:textColor="#666666"
+            android:textSize="15sp" />
+
+        <!-- Search field -->
+        <EditText
+            android:id="@+id/searchResources"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="24dp"
+            android:background="#FFFFFF"
+            android:hint="Search learning resources..."
+            android:padding="12dp"
+            android:singleLine="true"
+            android:inputType="text" />
+
+        <!-- Section heading -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Explore Masomo Share"
+            android:textColor="#202124"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Browse resources -->
+        <Button
+            android:id="@+id/btnBrowseResources"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Browse Resources" />
+
+        <!-- My library -->
+        <Button
+            android:id="@+id/btnMyLibrary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="My Library" />
+
+        <!-- Upload resources -->
+        <Button
+            android:id="@+id/btnUploadResource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Upload Learning Material" />
+
+        <!-- Profile -->
+        <Button
+            android:id="@+id/btnProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="My Profile" />
+
+    </LinearLayout>
+
+</ScrollView>
