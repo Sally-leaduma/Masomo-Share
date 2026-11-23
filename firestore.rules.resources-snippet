@@ -1,0 +1,22 @@
+// MEMBER 4 - Firestore security rules for the `resources` collection.
+// MERGE this block inside the existing `match /databases/{database}/documents { ... }`
+// in the Firebase console (Firestore -> Rules). Do NOT replace the whole ruleset:
+// other members' collections (users, downloads, ...) need their own rules.
+
+match /resources/{resourceId} {
+  // anyone signed in can browse
+  allow read: if request.auth != null;
+
+  // you can only upload a resource as yourself
+  allow create: if request.auth != null
+                && request.resource.data.uploaderId == request.auth.uid
+                && request.resource.data.contributorId == request.auth.uid;
+
+  // only the uploader can edit or delete, and ownership can't be reassigned
+  allow update: if request.auth != null
+                && resource.data.uploaderId == request.auth.uid
+                && request.resource.data.uploaderId == resource.data.uploaderId;
+
+  allow delete: if request.auth != null
+                && resource.data.uploaderId == request.auth.uid;
+}

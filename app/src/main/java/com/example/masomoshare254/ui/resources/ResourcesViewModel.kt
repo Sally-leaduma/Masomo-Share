@@ -7,6 +7,7 @@ import com.example.masomoshare254.data.ResourceCatalogueRepository
 import com.example.masomoshare254.model.Resource
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.storage.StorageException
 
 sealed class CatalogueState {
     object Loading : CatalogueState()
@@ -92,15 +93,24 @@ class ResourcesViewModel(
     }
 
     companion object {
-        fun friendlyMessage(e: Exception): String =
-            if (e is FirebaseFirestoreException) {
-                when (e.code) {
-                    FirebaseFirestoreException.Code.PERMISSION_DENIED ->
-                        "You don't have permission to view resources. Please log in and try again."
-                    FirebaseFirestoreException.Code.UNAVAILABLE ->
-                        "No internet connection. Check your network and try again."
-                    else -> "Could not load resources. Please try again."
-                }
-            } else "Something went wrong. Please try again."
+        fun friendlyMessage(e: Exception): String = when {
+            e is IllegalArgumentException -> "This resource link is invalid."
+            e is FirebaseFirestoreException -> when (e.code) {
+                FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                    "You don't have permission to do that. Please log in and try again."
+                FirebaseFirestoreException.Code.UNAVAILABLE ->
+                    "No internet connection. Check your network and try again."
+                else -> "Could not load resources. Please try again."
+            }
+            e is StorageException -> when (e.errorCode) {
+                StorageException.ERROR_NOT_AUTHORIZED,
+                StorageException.ERROR_NOT_AUTHENTICATED ->
+                    "You don't have permission to do that. Please log in and try again."
+                StorageException.ERROR_RETRY_LIMIT_EXCEEDED ->
+                    "No internet connection. Check your network and try again."
+                else -> "Could not access the file. Please try again."
+            }
+            else -> "Something went wrong. Please try again."
+        }
     }
 }
