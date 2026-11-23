@@ -1,0 +1,13 @@
+// MEMBER 4 - Firebase Storage security rules for uploaded files.
+// Member 3 stores files at:  resources/{uploaderUid}/{docId}_{fileName}
+// MERGE inside `match /b/{bucket}/o { ... }` in the Firebase console (Storage -> Rules).
+
+match /resources/{uid}/{allPaths=**} {
+  allow read: if request.auth != null;
+
+  // only the owner folder's user can upload or overwrite
+  allow create, update: if request.auth != null && request.auth.uid == uid;
+
+  // only the owner can delete their file
+  allow delete: if request.auth != null && request.auth.uid == uid;
+}

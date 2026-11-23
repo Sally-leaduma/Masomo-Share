@@ -1,0 +1,37 @@
+package com.example.masomoshare254.ui.resources
+
+import com.example.masomoshare254.model.Resource
+
+/** Pure Kotlin search + filter logic (no Android classes, so it can be unit tested). */
+object ResourceFilter {
+
+    private val WHITESPACE = Regex("[\\s\\u00A0]+")
+
+    fun apply(
+        resources: List<Resource>,
+        query: String,
+        subject: String?,
+        level: String?,
+        type: String?
+    ): List<Resource> {
+        // split on ANY run of whitespace (spaces, tabs, new lines, non-breaking spaces)
+        val words = query.trim().lowercase().split(WHITESPACE).filter { it.isNotEmpty() }
+
+        return resources.filter { r ->
+            val matchesFilters =
+                (subject == null || r.subject.trim().equals(subject, ignoreCase = true)) &&
+                (level == null || r.educationLevel.trim().equals(level, ignoreCase = true)) &&
+                (type == null || r.resourceType.trim().equals(type, ignoreCase = true))
+
+            // every typed word must appear in title, description, subject or topic
+            val searchable = "${r.title} ${r.description} ${r.subject} ${r.topic}".lowercase()
+            matchesFilters && words.all { searchable.contains(it) }
+        }
+    }
+
+    /** Distinct, sorted, non-blank values for a filter dropdown. */
+    fun distinctValues(values: List<String>): List<String> =
+        values.map { it.trim() }.filter { it.isNotEmpty() }
+            .distinctBy { it.lowercase() }
+            .sortedBy { it.lowercase() }
+}

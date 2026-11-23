@@ -27,6 +27,16 @@ android {
             isMinifyEnabled = false
         }
     }
+<<<<<<< HEAD
+=======
+    buildFeatures {
+        viewBinding = true
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+>>>>>>> origin/master
 }
 
 dependencies {
@@ -35,7 +45,12 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+<<<<<<< HEAD
 
+=======
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+>>>>>>> origin/master
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
