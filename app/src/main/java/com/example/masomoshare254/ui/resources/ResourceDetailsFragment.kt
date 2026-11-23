@@ -42,7 +42,8 @@ class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
             progress.visibility = if (state is DetailsState.Loading) View.VISIBLE else View.GONE
             content.visibility = if (state is DetailsState.Loaded) View.VISIBLE else View.GONE
             errorText.visibility = if (state is DetailsState.Error) View.VISIBLE else View.GONE
-            retry.visibility = if (state is DetailsState.Error) View.VISIBLE else View.GONE
+            retry.visibility =
+                if (state is DetailsState.Error && state.canRetry) View.VISIBLE else View.GONE
 
             when (state) {
                 is DetailsState.Loaded -> {
@@ -54,8 +55,12 @@ class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
                     view.findViewById<TextView>(R.id.detailTopic).text = "Topic: ${r.topic}"
                     view.findViewById<TextView>(R.id.detailDescription).text = r.description
 
+                    openButton.isEnabled = !state.isDeleting
                     openButton.setOnClickListener { openResource(r) }
+
                     deleteButton.visibility = if (state.canDelete) View.VISIBLE else View.GONE
+                    deleteButton.isEnabled = !state.isDeleting
+                    deleteButton.text = if (state.isDeleting) "Deleting..." else "Delete my upload"
                     deleteButton.setOnClickListener { confirmDelete(r) }
                 }
                 is DetailsState.Error -> errorText.text = state.message
@@ -66,11 +71,18 @@ class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
                 is DetailsState.Loading -> Unit
             }
         }
+
+        viewModel.message.observe(viewLifecycleOwner) { message ->
+            if (message != null) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                viewModel.messageShown()
+            }
+        }
     }
 
     /**
-     * Interim "open": hands the file URL to whatever app can view it.
-     * Member 5 can replace this with navigation to the in-app PDF viewer / download.
+     * TEMPORARY: hands the file URL to whatever app can view it.
+     * To be replaced with Member 5's agreed PDF viewer / download workflow.
      */
     private fun openResource(resource: Resource) {
         if (resource.fileUrl.isBlank()) {
@@ -88,7 +100,7 @@ class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete resource?")
             .setMessage("\"${resource.title}\" will be removed for everyone. This cannot be undone.")
-            .setPositiveButton("Delete") { _, _ -> viewModel.delete(resource) }
+            .setPositiveButton("Delete") { _, _ -> viewModel.delete() }
             .setNegativeButton("Cancel", null)
             .show()
     }

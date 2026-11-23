@@ -5,6 +5,8 @@ import com.example.masomoshare254.model.Resource
 /** Pure Kotlin search + filter logic (no Android classes, so it can be unit tested). */
 object ResourceFilter {
 
+    private val WHITESPACE = Regex("[\\s\\u00A0]+")
+
     fun apply(
         resources: List<Resource>,
         query: String,
@@ -12,13 +14,14 @@ object ResourceFilter {
         level: String?,
         type: String?
     ): List<Resource> {
-        val words = query.trim().lowercase().split(" ").filter { it.isNotBlank() }
+        // split on ANY run of whitespace (spaces, tabs, new lines, non-breaking spaces)
+        val words = query.trim().lowercase().split(WHITESPACE).filter { it.isNotEmpty() }
 
         return resources.filter { r ->
             val matchesFilters =
-                (subject == null || r.subject.equals(subject, ignoreCase = true)) &&
-                (level == null || r.educationLevel.equals(level, ignoreCase = true)) &&
-                (type == null || r.resourceType.equals(type, ignoreCase = true))
+                (subject == null || r.subject.trim().equals(subject, ignoreCase = true)) &&
+                (level == null || r.educationLevel.trim().equals(level, ignoreCase = true)) &&
+                (type == null || r.resourceType.trim().equals(type, ignoreCase = true))
 
             // every typed word must appear in title, description, subject or topic
             val searchable = "${r.title} ${r.description} ${r.subject} ${r.topic}".lowercase()

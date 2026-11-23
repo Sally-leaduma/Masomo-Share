@@ -46,4 +46,23 @@ class ResourceFilterTest {
         val values = ResourceFilter.distinctValues(listOf("Notes", "notes", " ", "PDF", ""))
         assertEquals(listOf("Notes", "PDF"), values)
     }
+
+    @Test fun whitespaceOnlyQuery_returnsEverything() {
+        assertEquals(3, ResourceFilter.apply(data, "   \t  ", null, null, null).size)
+    }
+
+    @Test fun extraSpacesTabsAndNewlines_areIgnored() {
+        val result = ResourceFilter.apply(data, "  maths \t  past\n", null, null, null)
+        assertEquals(listOf("1"), result.map { it.resourceId })
+    }
+
+    @Test fun nonBreakingSpace_isTreatedAsSpace() {
+        val result = ResourceFilter.apply(data, "maths\u00A0past", null, null, null)
+        assertEquals(listOf("1"), result.map { it.resourceId })
+    }
+
+    @Test fun filters_ignoreSurroundingSpacesInStoredValues() {
+        val padded = listOf(data[1].copy(subject = " Biology "))
+        assertEquals(1, ResourceFilter.apply(padded, "", "Biology", null, null).size)
+    }
 }
