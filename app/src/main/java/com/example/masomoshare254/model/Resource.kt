@@ -10,5 +10,10 @@ data class Resource(
     val topic: String = "",
     val resourceType: String = "",
     val fileUrl: String = "",
-    val contributorId: String = ""
+    val fileName: String = "",
+    val fileType: String = "",
+    val storagePath: String = "",
+    val contributorId: String = "",
+    val uploaderId: String = "",
+    val uploadedAt: Long = 0L
 )
