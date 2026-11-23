@@ -23,7 +23,24 @@
     <fragment
         android:id="@+id/resourcesFragment"
         android:name="com.example.masomoshare254.ui.resources.ResourcesFragment"
-        android:label="Browse Resources" />
+        android:label="Browse Resources">
+
+        <action
+            android:id="@+id/action_resources_to_details"
+            app:destination="@id/resourceDetailsFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/resourceDetailsFragment"
+        android:name="com.example.masomoshare254.ui.resources.ResourceDetailsFragment"
+        android:label="Resource Details">
+
+        <argument
+            android:name="resourceId"
+            app:argType="string" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/featureFragment"
