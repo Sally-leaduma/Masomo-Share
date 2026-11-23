@@ -49,6 +49,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvRegisterPrompt.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             try {
                 findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
             } catch (_: Exception) {
@@ -90,6 +91,7 @@ class LoginFragment : Fragment() {
         showLoading(true)
 
         authRepository.loginUser(email, password) { result ->
+            if (_binding == null || !isAdded) return@loginUser
             showLoading(false)
             result.onSuccess { userSession ->
                 Toast.makeText(
@@ -108,25 +110,27 @@ class LoginFragment : Fragment() {
     private fun handleForgotPassword() {
         val email = binding.etEmail.text?.toString()?.trim() ?: ""
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.tilEmail.error = "Enter your email to receive password reset link"
+            binding.tilEmail.error = "Enter a valid email address to receive password reset link"
             return
         }
 
         authRepository.sendPasswordReset(email) { _, message ->
-            Toast.makeText(requireContext(), message ?: "Password reset requested.", Toast.LENGTH_LONG).show()
+            if (_binding == null || !isAdded) return@sendPasswordReset
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
         }
     }
 
     private fun navigateToDashboard() {
+        if (!isAdded) return
         try {
             findNavController().navigate(R.id.action_loginFragment_to_dashboardFragment)
         } catch (_: Exception) {
-            // Fallback navigation if container layout is directly swapped
             Toast.makeText(requireContext(), "Authenticated successfully!", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun showLoading(isLoading: Boolean) {
+        if (_binding == null) return
         binding.progressBarLogin.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.btnLogin.isEnabled = !isLoading
     }

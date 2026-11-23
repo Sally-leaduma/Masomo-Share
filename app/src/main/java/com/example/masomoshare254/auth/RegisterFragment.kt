@@ -53,6 +53,7 @@ class RegisterFragment : Fragment() {
         }
 
         binding.tvLoginPrompt.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             try {
                 findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
             } catch (_: Exception) {
@@ -105,11 +106,12 @@ class RegisterFragment : Fragment() {
         showLoading(true)
 
         authRepository.registerUser(email, password, fullName, role) { result ->
+            if (_binding == null || !isAdded) return@registerUser
             showLoading(false)
             result.onSuccess { userSession ->
                 Toast.makeText(
                     requireContext(),
-                    "Account created successfully! Welcome, ${userSession.displayName}",
+                    "Account created successfully as ${userSession.role}! Welcome, ${userSession.displayName}",
                     Toast.LENGTH_SHORT
                 ).show()
                 navigateToDashboard()
@@ -121,6 +123,7 @@ class RegisterFragment : Fragment() {
     }
 
     private fun navigateToDashboard() {
+        if (!isAdded) return
         try {
             findNavController().navigate(R.id.action_registerFragment_to_dashboardFragment)
         } catch (_: Exception) {
@@ -129,6 +132,7 @@ class RegisterFragment : Fragment() {
     }
 
     private fun showLoading(isLoading: Boolean) {
+        if (_binding == null) return
         binding.progressBarRegister.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.btnRegister.isEnabled = !isLoading
     }
