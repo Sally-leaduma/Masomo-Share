@@ -51,12 +51,15 @@ class MyLibraryFragment : Fragment() {
             } catch (e: Exception) {
                 return@launch showEmpty("Could not load your library.")
             }
-            if (records.isEmpty()) {
+            // Remove stale records whose file is missing, so they never appear in the library
+            val (valid, stale) = records.partition { FileStorage.isValid(File(it.localPath)) }
+            stale.forEach { LibraryProvider.store.delete(it.userId, it.resourceId) }
+            if (valid.isEmpty()) {
                 showEmpty("No downloaded resources yet.\nDownload from the Catalogue to read offline.")
             } else {
                 tvEmpty.visibility = View.GONE
                 rvDownloads.visibility = View.VISIBLE
-                adapter.submitList(records)
+                adapter.submitList(valid)
             }
         }
     }
