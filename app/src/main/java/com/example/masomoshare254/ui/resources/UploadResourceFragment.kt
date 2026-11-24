@@ -1,5 +1,10 @@
 package com.example.masomoshare254.ui.resources
 
+import com.example.masomoshare254.SupabaseConfig
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -12,10 +17,16 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.UploadTask
 import com.example.masomoshare254.databinding.FragmentUploadResourceBinding
 import com.example.masomoshare254.model.Resource
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import java.io.IOException
 
 class UploadResourceFragment : Fragment() {
 
@@ -23,13 +34,13 @@ class UploadResourceFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val auth by lazy { FirebaseAuth.getInstance() }
-    private val storage by lazy { FirebaseStorage.getInstance() }
+    private val httpClient = OkHttpClient()
     private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     private var selectedUri: Uri? = null
     private var selectedFileName: String? = null
     private var selectedMimeType: String? = null
-    private var currentUpload: UploadTask? = null
+    private var currentUpload: Call? = null
 
     // Agreed file formats and size limit (confirm with the group)
     private val allowedMimeTypes = arrayOf("application/pdf", "image/jpeg", "image/png")
@@ -70,6 +81,8 @@ class UploadResourceFragment : Fragment() {
         binding.btnUpload.setOnClickListener { onUploadClicked() }
         binding.btnCancelUpload.setOnClickListener {
             currentUpload?.cancel()
+            setUploading(false)
+            showMessage("Upload cancelled.")
         }
     }
 
@@ -162,48 +175,107 @@ class UploadResourceFragment : Fragment() {
 
     // ---------------------------------------------------------------- Upload
 
+
     private fun onUploadClicked() {
         val uid = auth.currentUser?.uid
+
         if (uid == null) {
             showMessage("You need to be logged in to upload.")
             return
         }
+
         if (!validateForm()) return
 
         val uri = selectedUri ?: return
         val fileName = selectedFileName ?: return
         val mime = selectedMimeType ?: return
 
-        // Pre-generate the Firestore document ID so the Storage path and doc match
         val docRef = firestore.collection("resources").document()
         val storagePath = "resources/$uid/${docRef.id}_$fileName"
-        val storageRef = storage.reference.child(storagePath)
+
+        val resolver = requireContext().contentResolver
 
         setUploading(true)
+        binding.tvProgress.text = "Preparing upload..."
 
-        val task = storageRef.putFile(uri)
-        currentUpload = task
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val fileBytes = withContext(Dispatchers.IO) {
+                    resolver.openInputStream(uri)?.use { it.readBytes() }
+                        ?: throw IOException("Could not read selected file.")
+                }
 
-        task.addOnProgressListener { snapshot ->
-            if (_binding == null) return@addOnProgressListener
-            val percent = if (snapshot.totalByteCount > 0)
-                (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toInt() else 0
-            binding.progressUpload.setProgressCompat(percent, true)
-            binding.tvProgress.text = "Uploading… $percent%"
-        }.continueWithTask { t ->
-            if (!t.isSuccessful) throw t.exception ?: Exception("Upload failed")
-            storageRef.downloadUrl
-        }.addOnSuccessListener { downloadUrl ->
-            saveMetadata(docRef.id, uid, fileName, mime, storagePath, downloadUrl.toString())
-        }.addOnFailureListener { e ->
-            if (_binding == null) return@addOnFailureListener
-            setUploading(false)
-            showMessage(
-                if (task.isCanceled) "Upload cancelled."
-                else "Upload failed: ${e.localizedMessage ?: "unknown error"}"
-            )
+                val encodedPath = storagePath.split("/")
+                    .joinToString("/") { Uri.encode(it) }
+
+                val uploadUrl =
+                    "${SupabaseConfig.SUPABASE_URL}/storage/v1/object/${SupabaseConfig.BUCKET_NAME}/$encodedPath"
+
+                val request = Request.Builder()
+                    .url(uploadUrl)
+                    .addHeader("apikey", SupabaseConfig.SUPABASE_KEY)
+                    .addHeader("Authorization", "Bearer ${SupabaseConfig.SUPABASE_KEY}")
+                    .addHeader("Content-Type", mime)
+                    .post(fileBytes.toRequestBody(mime.toMediaType()))
+                    .build()
+
+                val call = httpClient.newCall(request)
+                currentUpload = call
+
+                binding.tvProgress.text = "Uploading..."
+
+                call.enqueue(object : Callback {
+
+                    override fun onFailure(call: Call, e: IOException) {
+                        activity?.runOnUiThread {
+                            if (_binding == null) return@runOnUiThread
+
+                            setUploading(false)
+                            showMessage(
+                                if (call.isCanceled()) "Upload cancelled."
+                                else "Upload failed: ${e.localizedMessage}"
+                            )
+                        }
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        val errorMessage = response.use {
+                            if (it.isSuccessful) null
+                            else it.body?.string() ?: "HTTP ${it.code}"
+                        }
+
+                        activity?.runOnUiThread {
+                            if (_binding == null) return@runOnUiThread
+
+                            if (errorMessage != null) {
+                                setUploading(false)
+                                showMessage("Supabase upload failed: $errorMessage")
+                            } else {
+                                val publicUrl =
+                                    "${SupabaseConfig.SUPABASE_URL}/storage/v1/object/public/${SupabaseConfig.BUCKET_NAME}/$encodedPath"
+
+                                saveMetadata(
+                                    docRef.id,
+                                    uid,
+                                    fileName,
+                                    mime,
+                                    storagePath,
+                                    publicUrl
+                                )
+                            }
+                        }
+                    }
+                })
+
+            } catch (e: Exception) {
+                if (_binding != null) {
+                    setUploading(false)
+                    showMessage("Upload failed: ${e.localizedMessage}")
+                }
+            }
         }
     }
+
 
     private fun saveMetadata(
         docId: String,
@@ -241,8 +313,6 @@ class UploadResourceFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 if (_binding == null) return@addOnFailureListener
-                // Roll back the orphaned file so Storage and Firestore stay consistent
-                storage.reference.child(storagePath).delete()
                 setUploading(false)
                 showMessage("Could not save resource details: ${e.localizedMessage}")
             }

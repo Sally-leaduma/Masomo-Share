@@ -57,6 +57,8 @@ dependencies {
 
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.4.0")
+    // Supabase file uploads
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Room and KSP
     implementation(libs.androidx.room.runtime)
