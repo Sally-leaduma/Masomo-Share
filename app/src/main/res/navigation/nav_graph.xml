@@ -43,12 +43,38 @@
         android:label="Dashboard"
         tools:layout="@layout/fragment_dashboard">
         <action
+            android:id="@+id/action_dashboard_to_profile"
+            app:destination="@id/myProfileFragment" />
+
+        <action
+            android:id="@+id/action_dashboard_to_library"
+            app:destination="@id/myLibraryFragment" />
+        <action
+            android:id="@+id/action_dashboard_to_upload"
+            app:destination="@id/uploadResourceFragment" />
+        <action
             android:id="@+id/action_dashboard_to_feature"
             app:destination="@id/featureFragment" />
         <action
             android:id="@+id/action_dashboard_to_resources"
             app:destination="@id/resourcesFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/myProfileFragment"
+        android:name="com.example.masomoshare254.ui.profile.MyProfileFragment"
+        android:label="My Profile"
+        tools:layout="@layout/fragment_my_profile" />
+    <fragment
+        android:id="@+id/uploadResourceFragment"
+        android:name="com.example.masomoshare254.ui.resources.UploadResourceFragment"
+        android:label="Upload Resource"
+        tools:layout="@layout/fragment_upload_resource" />
+    <fragment
+        android:id="@+id/myLibraryFragment"
+        android:name="com.example.masomoshare254.MyLibraryFragment"
+        android:label="My Library"
+        tools:layout="@layout/fragment_my_library" />
 
     <fragment
         android:id="@+id/resourcesFragment"

@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -27,16 +28,11 @@ android {
             isMinifyEnabled = false
         }
     }
-<<<<<<< HEAD
-=======
-    buildFeatures {
-        viewBinding = true
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
->>>>>>> origin/master
 }
 
 dependencies {
@@ -45,30 +41,26 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
-<<<<<<< HEAD
 
-=======
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
->>>>>>> origin/master
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
-    implementation("com.google.firebase:firebase-auth")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
 
-    // Navigation Component
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
-
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.4.0")
+    // Supabase file uploads
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    // Room & KSP
+    // Room and KSP
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

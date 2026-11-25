@@ -1,4 +1,3 @@
-
 package com.example.masomoshare254.ui.dashboard
 
 import android.os.Bundle
@@ -17,19 +16,20 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             .setOnClickListener {
                 findNavController().navigate(R.id.action_dashboard_to_resources)
             }
+
         view.findViewById<Button>(R.id.btnMyLibrary)
             .setOnClickListener {
-                openFeature("My Library", "Access your downloaded learning materials.")
+                findNavController().navigate(R.id.action_dashboard_to_library)
             }
 
         view.findViewById<Button>(R.id.btnUploadResource)
             .setOnClickListener {
-                openFeature("Upload Learning Material", "Share learning materials with other students.")
+                findNavController().navigate(R.id.action_dashboard_to_upload)
             }
 
         view.findViewById<Button>(R.id.btnProfile)
             .setOnClickListener {
-                openFeature("My Profile", "View and manage your account information.")
+                findNavController().navigate(R.id.action_dashboard_to_profile)
             }
     }
 

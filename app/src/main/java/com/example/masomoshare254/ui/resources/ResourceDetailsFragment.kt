@@ -13,12 +13,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.example.masomoshare254.R
 import com.example.masomoshare254.model.Resource
+import com.example.masomoshare254.DownloadService
 
 class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
 
+
     private val viewModel: ResourceDetailsViewModel by viewModels()
+
+    private val downloadService by lazy {
+        DownloadService(requireContext().applicationContext)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,13 +94,37 @@ class ResourceDetailsFragment : Fragment(R.layout.fragment_resource_details) {
      */
     private fun openResource(resource: Resource) {
         if (resource.fileUrl.isBlank()) {
-            Toast.makeText(requireContext(), "This resource has no file attached.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "This resource has no downloadable file.",
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(resource.fileUrl)))
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(requireContext(), "No app available to open this file.", Toast.LENGTH_SHORT).show()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                Toast.makeText(
+                    requireContext(),
+                    "Downloading resource...",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                downloadService.download(resource)
+
+                Toast.makeText(
+                    requireContext(),
+                    "Downloaded successfully! Find it in My Library.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Download failed: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

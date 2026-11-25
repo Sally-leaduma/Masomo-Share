@@ -28,6 +28,7 @@ class MyLibraryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        LibraryProvider.initialize(requireContext())
         rvDownloads = view.findViewById(R.id.rvDownloads)
         tvEmpty = view.findViewById(R.id.tvEmptyLibrary)
         adapter = DownloadedResourceAdapter(onOpen = ::openResource, onLongPress = ::confirmDelete)
